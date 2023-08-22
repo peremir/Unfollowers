@@ -10,7 +10,7 @@ void printList(list<string> list) {
     }
 }
 
-void listLoad(list<string>& list, string filename) {
+void listLoad(list<string>& list, string filename, int padding) {
     fstream file;
 
     // Open a file to perform a write operation using a file object.
@@ -24,18 +24,15 @@ void listLoad(list<string>& list, string filename) {
             
             if(line.find("value") != string::npos) {
                 // Get the username only.
-                string username = line.substr(20, line.length() - 22);
-
+                string username = line.substr(18 + padding);
+                username = username.substr(0, username.length() - 2);
+                
                 // Add the username to the list.
                 list.insert(list.end(), username);
-
-                //cout << username << "\n";
             }
         }
         list.sort();
         file.close(); 
-
-        //printList(list);
     }
 }
 
@@ -46,15 +43,30 @@ int main() {
     list<string> followers;
 
     // Load the files into the lists.
-    listLoad(following, "following.json");
-    listLoad(following, "followers_1.json");
+    listLoad(following, "following.json", 2);
+    listLoad(followers, "followers_1.json", 0);
 
     // Declare a list for calculating unfollowers.
     list<string> unfollowers;
 
     // Compare the two lists.
-    list<string>::iterator it;
-    
+    list<string>::iterator itFollowing = following.begin();
+    list<string>::iterator itFollowers = followers.begin();
 
+    //cout << *itFollowing << endl << *itFollowers << "\n";
+
+    while (itFollowing != following.end() && itFollowers != followers.end()) {
+        if (*itFollowing == *itFollowers) {
+            itFollowing++;
+            itFollowers++;
+        } else if (*itFollowing < *itFollowers) {
+            unfollowers.insert(unfollowers.end(), *itFollowing);
+            itFollowing++;
+        } else {
+            itFollowers++;
+        }
+    }
+
+    unfollowers.sort();
     printList(unfollowers);
 }
